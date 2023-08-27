@@ -1,11 +1,15 @@
 import os
 
 from flask import Flask
+import logging
+
+logging.basicConfig(filename='leetcode_discord_bot_flask.log', level=logging.INFO, format="%(asctime)s:%(message)s")
 
 
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
     app = Flask(__name__, instance_relative_config=True)
+    
     print(app.instance_path)
     app.config.from_mapping(
         # a default secret that should be overridden by instance config
@@ -28,8 +32,8 @@ def create_app(test_config=None):
         pass
 
     # register the database commands
-    #from flask_app import db
-    #db.init_app(app)
+    from flask_app import db
+    db.init_app(app)
 
     # apply the blueprints to the app
     from flask_app import interactions

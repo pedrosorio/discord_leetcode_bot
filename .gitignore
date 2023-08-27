@@ -1,3 +1,4 @@
-TOKEN.txt
-PUBLIC_KEY.txt
 venv/
+__pycache__
+instance/
+SECRETS.txt

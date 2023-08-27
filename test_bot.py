@@ -1,13 +1,7 @@
 from dataclasses import dataclass, fields
 import json
 import requests
-
-DISCORD_API_URL = 'https://discord.com/api/channels/{channel_id}/messages' 
-TEST_CHANNEL_ID = 1143698636929245254
-
-TOKEN = open('TOKEN.txt').readlines()[0].strip()
-print(TOKEN)
-print(f'Bot {TOKEN}')
+from discord_utils import *
 
 discord_to_leetcode_map = {
         'tolga': 'tpoyraz22',
@@ -18,12 +12,9 @@ discord_to_leetcode_map = {
         'betsymp': 'betsymp'
         }
 
-def post_message(message):
-    response = requests.post(url=DISCORD_API_URL.format(channel_id=TEST_CHANNEL_ID), headers={'Authorization': f'Bot {TOKEN}'}, json={'content': message})
-    print(response.status_code)
-    print(response.content)
+print(get_user(663105721742917647))
 
-#post_message('Test message from the bot')
+post_message('Test message from the bot')
 
 LEETCODE_PREDICT_URL = "https://lccn.lbao.site/api/v1"
 LEETCODE_CONTESTS = LEETCODE_PREDICT_URL +  "/contests/?skip={skip}&limit={limit}"
@@ -108,5 +99,5 @@ msg = format_message_for_users(last_contest, [up, up2, up3, up4])
 print(len(msg))
 print(msg)
 
-post_message(msg)
+# post_message(msg)
 
