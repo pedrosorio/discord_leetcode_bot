@@ -2,7 +2,7 @@ from flask import (
     Blueprint, request
 )
 from flask_app.db import get_db
-from discord_utils import get_user
+from discord_utils import get_user, EPHEMERAL_MSG_FLAG
 from query_utils import QueryUtils
 import json
 import logging 
@@ -23,8 +23,11 @@ def handle_register_user(request_json):
     qu = QueryUtils(get_db())
     user_id=request_json['member']['user']['id']
     user_in_db = qu.get_discord_username(user_id)
-    if not user_in_db:
-        username=get_user(user_id)['username']
+    if user_in_db:
+        username = user_in_db[0]
+    else:
+        user = get_user(user_id)
+        username=user['global_name'] if user['global_name'] else user['username']
         qu.insert_or_update_discord_user(
             user_id=user_id,
             username=username
@@ -32,6 +35,7 @@ def handle_register_user(request_json):
     server_id = request_json['guild_id']
     leetcode_in_db = qu.get_leetcode_username(server_id, user_id)
     new_leetcode_username = request_json['data']['options'][0]['value']
+    logging.info([server_id, username, new_leetcode_username])
     qu.insert_or_update_server_user(
         server_id=server_id,
         discord_user_id=user_id,
@@ -47,9 +51,10 @@ def handle_register_user(request_json):
                 msg = "leetcode username updated for this discord server" 
         else:
             msg = "user already in db for different discord, assigned leetcode username for this discord server"
+    logging.info(msg)
     return {
         "type": 4,
-        "data": {"content": msg}
+        "data": {"content": msg, "flags": EPHEMERAL_MSG_FLAG}
     }
 
 

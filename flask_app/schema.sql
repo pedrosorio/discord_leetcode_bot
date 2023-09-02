@@ -24,7 +24,8 @@ CREATE TABLE server_users(
 );
 
 CREATE TABLE contests(
-    contest_name text PRIMARY KEY
+    contest_name text PRIMARY KEY,
+    timestamp int 
 );
 
 CREATE TABLE contest_performances(

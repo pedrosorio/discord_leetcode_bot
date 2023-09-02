@@ -1,7 +1,5 @@
-from dataclasses import dataclass, fields
-import json
-import requests
 from discord_utils import *
+from prediction_utils import *
 
 discord_to_leetcode_map = {
         'tolga': 'tpoyraz22',
@@ -16,74 +14,17 @@ print(get_user(663105721742917647))
 
 post_message('Test message from the bot')
 
-LEETCODE_PREDICT_URL = "https://lccn.lbao.site/api/v1"
-LEETCODE_CONTESTS = LEETCODE_PREDICT_URL +  "/contests/?skip={skip}&limit={limit}"
-LEETCODE_PREDICTIONS = LEETCODE_PREDICT_URL + "/contest-records/?contest_name={contest}&archived=false&skip={skip}&limit={limit}"
-LEETCODE_USER_PREDICTIONS = LEETCODE_PREDICT_URL + "/contest-records/user?contest_name={contest}&username={username}&archived=false"
-
-def get_last_contest_name():
-    response = requests.get(LEETCODE_CONTESTS.format(skip=0, limit=1))
-    print(response.status_code)
-    print(response.content)
-    return json.loads(response.content.decode('utf-8'))[0]['titleSlug']
-
-# last_contest = get_last_contest_name()
+# last_contest = get_last_contest_names()[0]
 last_contest = 'weekly-contest-359'
 print(last_contest)
 
-
-def get_top_users(contest_name, num_users=20, skip=0):
-    url = LEETCODE_PREDICTIONS.format(contest=contest_name, skip=skip, limit=num_users)
-    print(url)
-    response = requests.get(url)
-    print(response.status_code)
-    return response.content
 
 # print(get_top_users('biweekly-contest-111', num_users=10, skip=4150))
 # print(get_top_users(last_contest))
 
 
-@dataclass
-class UserPrediction:
-    username: str
-    rank: int
-    new_rating: float
-    delta_rating: float
-    country_code: str
-
-USER_PREDICTION_FIELDS = set([f.name for f in fields(UserPrediction)])
-
-def get_user_prediction(contest_name, username):
-    url = LEETCODE_USER_PREDICTIONS.format(contest=contest_name, username=username)
-    data = requests.get(url).content
-    print(data)
-    json_data = json.loads(data.decode('utf-8'))[0]
-    print(json_data)
-    return UserPrediction(**{k: json_data[k] for k in json_data if k in USER_PREDICTION_FIELDS})
-
-
-def get_flag(country_code):
-    return ''.join([chr(ord(c.upper()) + ord('🇦') - ord('A')) for c in country_code])
 
 print(get_flag('PT'))
-
-
-def format_message_for_users(contest, users_predictions):
-    max_rank_len = max([len(str(up.rank)) for up in users_predictions])
-    max_username_len = max([len(up.username) for up in users_predictions])
-    max_new_rating_len = max([len(f'{up.new_rating:+.2f}') for up in users_predictions])
-    max_delta_rating_len = max([len(f'{up.delta_rating:+.2f}') for up in users_predictions])
-    msg = []
-    for up in sorted(users_predictions, key=lambda up: up.rank):
-        row = '   ' .join([
-            f'`#{up.rank:<{max_rank_len}}`',
-            f'`{up.username:<{max_username_len}}`',
-            get_flag(up.country_code) if up.country_code else '`  `',
-            f'`{up.delta_rating:=+{max_delta_rating_len}.2f}`',
-            f'`={up.new_rating:{max_new_rating_len}.2f}`'
-            ])
-        msg.append(row)
-    return '\n'.join(msg)
 
 
 # print(get_user_prediction('biweekly-contest-111', 'Sandeep_P'))
