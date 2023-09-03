@@ -29,6 +29,10 @@ class UserPrediction:
     delta_rating: float
     country_code: str
 
+@dataclass
+class DiscordUserPrediction(UserPrediction):
+    discord_user_id: int
+
 USER_PREDICTION_FIELDS = set([f.name for f in fields(UserPrediction)])
 
 def fetch_user_prediction(contest_name, username) -> UserPrediction:
@@ -45,13 +49,15 @@ def fetch_user_prediction(contest_name, username) -> UserPrediction:
 def get_flag(country_code):
     return ''.join([chr(ord(c.upper()) + ord('🇦') - ord('A')) for c in country_code])
 
-def format_message_for_users(contest, users_predictions):
-    max_rank_len = max([len(str(up.rank)) for up in users_predictions])
-    max_username_len = max([len(up.username) for up in users_predictions])
-    max_new_rating_len = max([len(f'{up.new_rating:+.2f}') for up in users_predictions])
-    max_delta_rating_len = max([len(f'{up.delta_rating:+.2f}') for up in users_predictions])
+def format_message_for_users(contest: str, predictions: List[DiscordUserPrediction]) -> str:
+    max_rank_len = max([len(str(up.rank)) for up in predictions])
+    max_username_len = max([len(up.username) for up in predictions])
+    max_new_rating_len = max([len(f'{up.new_rating:+.2f}') for up in predictions])
+    max_delta_rating_len = max([len(f'{up.delta_rating:+.2f}') for up in predictions])
     msg = [f'Predictions for {contest}']
-    for up in sorted(users_predictions, key=lambda up: up.rank):
+    mentions = []
+    for up in sorted(predictions, key=lambda up: up.rank):
+        mentions.append(f'<@{up.discord_user_id}>')
         row = '   ' .join([
             f'`#{up.rank:<{max_rank_len}}`',
             f'`{up.username:<{max_username_len}}`',
@@ -60,4 +66,6 @@ def format_message_for_users(contest, users_predictions):
             f'`={up.new_rating:{max_new_rating_len}.2f}`'
             ])
         msg.append(row)
+    msg.append(' '.join(mentions))
+    msg.append("If you would like to join, type /register_leetcode_user in any channel on this discord server to add yourself to the list")
     return '\n'.join(msg)
