@@ -29,6 +29,7 @@ def update_all_discord_usernames_in_db(qu: QueryUtils):
             user_id=user_id,
             username=username
         )
+        qu.commit()
 
 def fetch_and_post_last_contest(send_message=False, redo_if_registered=True):
     contest_name = pu.get_last_contest_names()[0]
@@ -56,6 +57,7 @@ def fetch_and_post_last_contest(send_message=False, redo_if_registered=True):
         up_list = []
         for discord_user_id, leetcode_username, discord_username in qu.get_server_users_with_discord_username(server_id):
             ct_users += 1
+            print(discord_user_id, leetcode_username, discord_username)
             up = leetcode_user_to_prediction.get(leetcode_username)
             if up:
                 up.username = discord_username
