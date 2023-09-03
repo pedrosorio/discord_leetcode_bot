@@ -102,7 +102,7 @@ class QueryUtils:
         self.conn.execute("INSERT OR IGNORE into contests VALUES (:contest_name, :timestamp)", params)
     
     def is_contest_registered(self, contest_name):
-        res = self.conn.execute("SELECT COUNT(1) FROM contests WHERE contest_name = :contest_name", {'contest_name': contest_name})
+        res = self.conn.execute("SELECT * FROM contests WHERE contest_name = :contest_name", {'contest_name': contest_name})
         return len(res.fetchall()) > 0
     
     def insert_contest_performances(self, contest_name: str, users_predictions: List[UserPrediction]):
