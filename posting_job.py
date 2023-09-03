@@ -1,6 +1,7 @@
 import prediction_utils as pu
 import discord_utils as du
 from query_utils import QueryUtils
+import time
 
 def fetch_missing_users_for_contest(contest_name) -> None:
     print("fetching user results for contest", contest_name)
@@ -21,13 +22,13 @@ def fetch_missing_users_for_contest(contest_name) -> None:
         qu.register_contest(contest_name)
         qu.commit()
 
-def fetch_and_post_last_contest(send_message=False, redo_if_registered=True):
+def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
     contest_name = pu.get_last_contest_names()[0]
     qu = QueryUtils()
     if qu.is_contest_registered(contest_name):
         print("contest already registered")
         if not redo_if_registered:
-            return 
+            return False
     fetch_missing_users_for_contest(contest_name)
     all_user_predictions = qu.get_contest_performances(contest_name)
     leetcode_user_to_prediction = {
@@ -54,6 +55,7 @@ def fetch_and_post_last_contest(send_message=False, redo_if_registered=True):
             if send_message:
                 du.post_message(msg, channel_id=channel_id)
                 print("posted message to server")
+    return True
 
-
-fetch_and_post_last_contest()
+while not fetch_and_post_last_contest():
+    time.sleep(30)
