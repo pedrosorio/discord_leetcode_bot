@@ -34,3 +34,9 @@ def post_message(message, channel_id=TEST_CHANNEL_ID):
     response = requests.post(url=DISCORD_MESSAGE_URL.format(channel_id=channel_id), headers=DISCORD_AUTH_HEADER, json={'content': message})
     print(response.status_code)
     print(response.content)
+
+
+def delete_message(channel_id, message_id):
+    response = requests.delete(url=DISCORD_MESSAGE_URL.format(channel_id=channel_id)+f'/{message_id}', headers=DISCORD_AUTH_HEADER)
+    print(response.status_code)
+    print(response.content)
