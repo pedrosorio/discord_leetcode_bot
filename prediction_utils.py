@@ -14,13 +14,6 @@ def get_last_contest_names(num=1):
     print(response.content)
     return [contest['titleSlug'] for contest in json.loads(response.content.decode('utf-8'))]
 
-def get_top_users(contest_name, num_users=20, skip=0):
-    url = LEETCODE_PREDICTIONS.format(contest=contest_name, skip=skip, limit=num_users)
-    print(url)
-    response = requests.get(url)
-    print(response.status_code)
-    return response.content
-
 @dataclass
 class UserPrediction:
     username: str
@@ -34,6 +27,14 @@ class DiscordUserPrediction(UserPrediction):
     discord_user_id: int
 
 USER_PREDICTION_FIELDS = set([f.name for f in fields(UserPrediction)])
+
+def get_top_users(contest_name, num_users=20, skip=0):
+    url = LEETCODE_PREDICTIONS.format(contest=contest_name, skip=skip, limit=num_users)
+    response = requests.get(url)
+    print(response.status_code)
+    json_data = json.loads(response.content.decode('utf-8'))
+    return [UserPrediction(**{k: row[k] for k in row if k in USER_PREDICTION_FIELDS}) for row in json_data]
+
 
 def fetch_user_prediction(contest_name, username) -> UserPrediction:
     url = LEETCODE_USER_PREDICTIONS.format(contest=contest_name, username=username)
