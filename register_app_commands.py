@@ -16,7 +16,7 @@ def register_command(cmd_json):
     print(response.content)
 
 def delete_command(cmd_id):
-    requests.delete(COMMAND_API_URL+f'/{cmd_id}')
+    return requests.delete(COMMAND_API_URL+f'/{cmd_id}', headers=DISCORD_AUTH_HEADER)
 
 def get_cmd_list():
     response = requests.get(COMMAND_API_URL, headers=DISCORD_AUTH_HEADER)
@@ -38,13 +38,14 @@ REGISTER_LEETCODE_USER_COMMAND = {
     ]
 }
 
-for cmd in get_cmd_list():
-    delete_command(cmd['id'])
+if __name__ == '__main__':
+    for cmd in get_cmd_list():
+        delete_command(cmd['id'])
 
-for cmd in (
-    REGISTER_LEETCODE_USER_COMMAND,
-):
-    register_command(cmd)
+    for cmd in (
+        REGISTER_LEETCODE_USER_COMMAND,
+    ):
+        register_command(cmd)
 
 
 
