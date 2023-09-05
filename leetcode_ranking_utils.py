@@ -32,7 +32,11 @@ def get_count_per_country(contest_name, start_page=1, num_pages=None, country_co
         for row in get_ranking_page(contest_name, page, debug_print):
             if only_positive_score and row['score'] == 0:
                 return country_counter 
-            country_counter[row['country_name']] += 1
+            country_code = row['country_code']
+            data_region = row['data_region']
+            if data_region == 'CN':
+                country_code = 'CN'
+            country_counter[country_code] += 1
 
     if debug_print:
         print(sum(country_counter.values()))
