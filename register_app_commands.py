@@ -38,12 +38,22 @@ REGISTER_LEETCODE_USER_COMMAND = {
     ]
 }
 
+UNREGISTER_LEETCODE_USER_COMMAND = {
+    "name": "unregister_leetcode_user",
+    "type": 1,
+    "description": "Remove association between user on a given discord server with a leetcode user",
+    "options": []
+}
+
+
+
 if __name__ == '__main__':
     for cmd in get_cmd_list():
         delete_command(cmd['id'])
 
     for cmd in (
         REGISTER_LEETCODE_USER_COMMAND,
+        UNREGISTER_LEETCODE_USER_COMMAND,
     ):
         register_command(cmd)
 

@@ -49,6 +49,9 @@ class QueryUtils:
             DO UPDATE SET discord_username = :username
         """, params)
 
+    def delete_discord_user(self, user_id):
+        self.conn.execute("DELETE FROM discord_users WHERE discord_user_id = :user_id", {'user_id': user_id})
+
     def insert_or_update_server_user(self, server_id, discord_user_id, leetcode_username):
         params = {
             'server_id': server_id,
@@ -62,6 +65,26 @@ class QueryUtils:
             ON CONFLICT(server_id, discord_user_id)
             DO UPDATE SET leetcode_username = :leetcode_username
         """, params)
+
+    def delete_server_user(self, server_id, discord_user_id):
+        params = {
+            'server_id': server_id,
+            'discord_user_id': discord_user_id
+        }
+        self.conn.execute("""
+            DELETE FROM
+                server_users
+            WHERE
+                server_id = :server_id
+                AND discord_user_id = :discord_user_id
+        """, params)
+
+    def count_user_servers(self, discord_user_id):
+        params = {
+            'discord_user_id': discord_user_id
+        }
+        res = self.conn.execute("SELECT server_id FROM server_users WHERE discord_user_id = :discord_user_id", params)
+        return len([tup for tup in res]) 
 
     def get_server_users_with_discord_username(self, server_id):
         params = {
