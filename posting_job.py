@@ -2,6 +2,7 @@ import prediction_utils as pu
 import discord_utils as du
 from query_utils import QueryUtils
 import time
+import sys
 
 def fetch_missing_users_for_contest(contest_name) -> None:
     print("fetching user results for contest", contest_name)
@@ -57,5 +58,13 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
                 print("posted message to server")
     return True
 
-while not fetch_and_post_last_contest():
-    time.sleep(30)
+send_message = True 
+redo_if_registered = False
+if __name__ == "__main__":
+    print(sys.argv)
+    if len(sys.argv) > 1:
+        if sys.argv[1] == 'test':
+            send_message = False
+            redo_if_registered = True
+    while not fetch_and_post_last_contest(redo_if_registered=redo_if_registered, send_message=send_message):
+        time.sleep(30)
