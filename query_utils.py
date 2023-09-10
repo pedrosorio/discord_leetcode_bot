@@ -3,7 +3,7 @@ import os
 import sqlite3
 import time
 from typing import *
-from prediction_utils import UserPrediction
+import prediction_utils as pu
 
 logging.basicConfig(filename='leetcode_discord_bot_flask.log', level=logging.INFO, format="%(asctime)s:%(message)s")
 
@@ -18,6 +18,7 @@ class QueryUtils:
         self.close_at_del = False
         if conn is None:
             conn = sqlite3.connect(DEFAULT_DB_FILE)
+            conn.row_factory = sqlite3.Row
             self.close_at_del = True
         self.conn = conn
 
@@ -128,7 +129,7 @@ class QueryUtils:
         res = self.conn.execute("SELECT * FROM contests WHERE contest_name = :contest_name", {'contest_name': contest_name})
         return len(res.fetchall()) > 0
     
-    def insert_contest_performances(self, contest_name: str, users_predictions: List[UserPrediction]):
+    def insert_contest_performances(self, contest_name: str, users_predictions: List[pu.FullUserPrediction]):
         values = [
             (
                 contest_name,
@@ -142,11 +143,11 @@ class QueryUtils:
         ]
         self.conn.executemany("INSERT OR IGNORE INTO contest_performances VALUES (?, ?, ?, ?, ?, ?)", values)
     
-    def get_contest_performances(self, contest_name: str, skip_null_rank: bool = True) -> List[UserPrediction]:
+    def get_contest_performances(self, contest_name: str, skip_null_rank: bool = True) -> List[pu.FullUserPrediction]:
         params = {'contest_name': contest_name}
         res = self.conn.execute("""
             SELECT 
-                leetcode_username,
+                leetcode_username as username,
                 rank,
                 new_rating,
                 delta_rating,
@@ -156,5 +157,7 @@ class QueryUtils:
             WHERE
                 contest_name = :contest_name
         """ + ("AND rank IS NOT NULL" if skip_null_rank else ""), params)
-        return [UserPrediction(*tup) for tup in res]
+        lst = [dict(row) for row in res.fetchall()]
+        print(lst)
+        return [pu.FullUserPrediction(**dc) for dc in lst]
 

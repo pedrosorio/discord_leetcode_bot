@@ -7,6 +7,8 @@ LEETCODE_PREDICT_URL = "https://lccn.lbao.site/api/v1"
 LEETCODE_CONTESTS = LEETCODE_PREDICT_URL +  "/contests/?skip={skip}&limit={limit}"
 LEETCODE_PREDICTIONS = LEETCODE_PREDICT_URL + "/contest-records/?contest_name={contest}&archived=false&skip={skip}&limit={limit}"
 LEETCODE_USER_PREDICTIONS = LEETCODE_PREDICT_URL + "/contest-records/user?contest_name={contest}&username={username}&archived=false"
+LEETCODE_MULTIPLE_USER_PREDICTIONS = LEETCODE_PREDICT_URL + "/contest-records/predicted-rating"
+
 
 def get_last_contest_names(num=1):
     response = requests.get(LEETCODE_CONTESTS.format(skip=0, limit=num))
@@ -15,37 +17,51 @@ def get_last_contest_names(num=1):
     return [contest['titleSlug'] for contest in json.loads(response.content.decode('utf-8'))]
 
 @dataclass
-class UserPrediction:
-    username: str
-    rank: int
+class RatingPrediction:
     new_rating: float
     delta_rating: float
-    country_code: str
+
+RATING_PREDICTION_FIELDS = set([f.name for f in fields(RatingPrediction)])
 
 @dataclass
-class DiscordUserPrediction(UserPrediction):
+class FullUserPrediction(RatingPrediction):
+    username: str
+    rank: int
+    country_code: str
+
+FULL_USER_PREDICTION_FIELDS = set([f.name for f in fields(FullUserPrediction)])
+
+@dataclass
+class DiscordUserPrediction(FullUserPrediction):
     discord_user_id: int
 
-USER_PREDICTION_FIELDS = set([f.name for f in fields(UserPrediction)])
 
 def get_top_users(contest_name, num_users=20, skip=0):
     url = LEETCODE_PREDICTIONS.format(contest=contest_name, skip=skip, limit=num_users)
     response = requests.get(url)
     print(response.status_code)
     json_data = json.loads(response.content.decode('utf-8'))
-    return [UserPrediction(**{k: row[k] for k in row if k in USER_PREDICTION_FIELDS}) for row in json_data]
+    return [FullUserPrediction(**{k: row[k] for k in row if k in FULL_USER_PREDICTION_FIELDS}) for row in json_data]
 
 
-def fetch_user_prediction(contest_name, username) -> UserPrediction:
+def fetch_user_prediction(contest_name, username) -> FullUserPrediction:
     url = LEETCODE_USER_PREDICTIONS.format(contest=contest_name, username=username)
     data = requests.get(url).content
     print(data)
     json_data = json.loads(data.decode('utf-8'))
     if not json_data:
-        return UserPrediction(username, *(len(USER_PREDICTION_FIELDS)-1)*[None])
+        return FullUserPrediction(**{k: (username if k == 'username' else None) for k in FULL_USER_PREDICTION_FIELDS})
     json_data = json_data[0]
     print(json_data)
-    return UserPrediction(**{k: json_data[k] for k in json_data if k in USER_PREDICTION_FIELDS})
+    return FullUserPrediction(**{k: json_data[k] for k in json_data if k in FULL_USER_PREDICTION_FIELDS})
+
+def fetch_multiple_rating_predictions(contest_name: str, users: List[str]) -> List[RatingPrediction]:
+    url = LEETCODE_MULTIPLE_USER_PREDICTIONS
+    response = requests.post(url, json = {'contest_name': contest_name, 'users': [{'username': user, 'data_region': 'US'} for user in users]})
+    json_data = json.loads(response.content.decode('utf-8'))
+    print(json_data)
+    return [RatingPrediction(**{k: json_row[k] for k in json_row if k in RATING_PREDICTION_FIELDS}) if json_row is not None else None for json_row in json_data] 
+
 
 def get_flag(country_code):
     return ''.join([chr(ord(c.upper()) + ord('🇦') - ord('A')) for c in country_code])
