@@ -2,6 +2,7 @@ from dataclasses import dataclass, fields
 import json
 import requests
 from typing import List
+import time
 
 LEETCODE_PREDICT_URL = "https://lccn.lbao.site/api/v1"
 LEETCODE_CONTESTS = LEETCODE_PREDICT_URL +  "/contests/?skip={skip}&limit={limit}"
@@ -46,7 +47,17 @@ def get_top_users(contest_name, num_users=20, skip=0):
 
 def fetch_user_prediction(contest_name, username) -> FullUserPrediction:
     url = LEETCODE_USER_PREDICTIONS.format(contest=contest_name, username=username)
-    data = requests.get(url).content
+    tries = 0
+    while True:
+        if tries > 0:
+            time.sleep(1)
+        tries += 1
+        res = requests.get(url)
+        print(res.status_code)
+        if res.status_code == 200:
+            break
+    print(f"successful after {tries} requests")
+    data = res.content
     print(data)
     json_data = json.loads(data.decode('utf-8'))
     if not json_data:
