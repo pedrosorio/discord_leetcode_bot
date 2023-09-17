@@ -92,6 +92,8 @@ def interactions():
         VERIFY_KEY.verify(f'{timestamp}{body}'.encode(), bytes.fromhex(signature))
     except BadSignatureError:
         return "invalid request signature", 401
+    
+    logging.info(request.json)
 
     # Handle discord ping
     if request.json["type"] == 1:
