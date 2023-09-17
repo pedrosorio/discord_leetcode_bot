@@ -42,6 +42,13 @@ def get_count_per_country(contest_name, start_page=1, num_pages=None, country_co
         print(sum(country_counter.values()))
     return country_counter 
 
+def get_user_to_rank(contest_name, start_page, num_pages=10):
+    ret = {}
+    for page in range(start_page, start_page+num_pages):
+        for row in get_ranking_page(contest_name, page):
+            ret[row['username']] = row['rank']
+    return ret
+
 class BinarySearchManually:
     def binary_search_num_users_with_positive_score(contest_name, max_page, debug_print=False):
         max_nonzero = 0 
