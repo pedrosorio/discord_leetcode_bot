@@ -23,6 +23,8 @@ def fetch_missing_users_for_contest(contest_name) -> None:
         qu.register_contest(contest_name)
         qu.commit()
 
+DEFAULT_SUFFIX_MSG = "If you would like to join, type /register_leetcode_user in any channel on this discord server to add yourself to the list" 
+
 def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
     contest_name = pu.get_last_contest_names()[0]
     qu = QueryUtils()
@@ -38,7 +40,7 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
         in all_user_predictions
     }
 
-    for server_id, channel_id in qu.get_discord_servers_and_channels():
+    for server_id, channel_id, custom_message in qu.get_discord_server_msg_config():
         server = du.get_guild(server_id)
         print("processing server:", server['name'])
         ct_users = 0
@@ -52,6 +54,7 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
         print(f"{len(server_list)} of {ct_users} from this server participated in the contest")
         if server_list:
             msg = pu.format_message_for_users(contest_name, server_list)
+            msg += '\n' + (custom_message or DEFAULT_SUFFIX_MSG)
             print(msg)
             if send_message:
                 du.post_message(msg, channel_id=channel_id)

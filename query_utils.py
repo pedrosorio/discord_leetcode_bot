@@ -29,8 +29,8 @@ class QueryUtils:
     def commit(self) -> None:
         self.conn.commit()
 
-    def get_discord_servers_and_channels(self):
-        res = self.conn.execute("SELECT server_id, channel_id FROM server_to_channel")
+    def get_discord_server_msg_config(self):
+        res = self.conn.execute("SELECT server_id, channel_id, custom_message FROM server_to_channel")
         return [list(tup) for tup in res]
     
     def get_all_discord_user_ids(self):

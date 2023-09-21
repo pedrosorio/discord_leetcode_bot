@@ -95,5 +95,4 @@ def format_message_for_users(contest: str, predictions: List[DiscordUserPredicti
             ])
         msg.append(row)
     msg.append(' '.join(mentions))
-    msg.append("If you would like to join, type /register_leetcode_user in any channel on this discord server to add yourself to the list")
     return '\n'.join(msg)

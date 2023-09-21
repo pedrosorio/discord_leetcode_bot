@@ -8,7 +8,8 @@ DROP TABLE IF EXISTS contest_performances;
 
 CREATE TABLE server_to_channel(
     server_id int PRIMARY KEY,
-    channel_id int 
+    channel_id int,
+    custom_message text
 );
 
 CREATE TABLE discord_users(
