@@ -83,6 +83,7 @@ def format_message_for_users(contest: str, predictions: List[DiscordUserPredicti
     max_new_rating_len = max([len(f'{up.new_rating:+.2f}') for up in predictions])
     max_delta_rating_len = max([len(f'{up.delta_rating:+.2f}') for up in predictions])
     msg = [f'Predictions for {contest}']
+    rows = []
     mentions = []
     for up in sorted(predictions, key=lambda up: up.rank):
         mentions.append(f'<@{up.discord_user_id}>')
@@ -93,6 +94,11 @@ def format_message_for_users(contest: str, predictions: List[DiscordUserPredicti
             f'`{up.delta_rating:=+{max_delta_rating_len}.2f}`',
             f'`={up.new_rating:{max_new_rating_len}.2f}`'
             ])
-        msg.append(row)
-    msg.append(' '.join(mentions))
-    return '\n'.join(msg)
+        rows.append(row)
+    msgs = []
+    for i in range((len(rows)-1)//10 + 1):
+        msg = [f'Predictions for {contest}'] if i == 0 else []
+        msg += rows[10*i:10*(i+1)]
+        msgs.append('\n'.join(msg))
+    msgs.append(' '.join(mentions))
+    return msgs 

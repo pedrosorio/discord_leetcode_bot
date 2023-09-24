@@ -53,12 +53,13 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
                 server_list.append(pu.DiscordUserPrediction(discord_user_id=discord_user_id, **vars(up)))
         print(f"{len(server_list)} of {ct_users} from this server participated in the contest")
         if server_list:
-            msg = pu.format_message_for_users(contest_name, server_list)
-            msg += '\n' + (custom_message or DEFAULT_SUFFIX_MSG)
-            print(msg)
-            if send_message:
-                du.post_message(msg, channel_id=channel_id)
-                print("posted message to server")
+            msgs = pu.format_message_for_users(contest_name, server_list)
+            msgs.append(custom_message or DEFAULT_SUFFIX_MSG)
+            for msg in msgs:
+                print(msg)
+                if send_message:
+                    du.post_message(msg, channel_id=channel_id)
+                    print("posted message to server")
     return True
 
 send_message = True 
