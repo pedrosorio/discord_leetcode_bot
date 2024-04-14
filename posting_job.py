@@ -17,6 +17,7 @@ def fetch_missing_users_for_contest(contest_name) -> None:
         print(user)
         up = pu.fetch_user_prediction(contest_name, user)
         user_predictions.append(up)
+        sys.stdout.flush()
     print(user_predictions)
     if user_predictions:
         qu.insert_contest_performances(contest_name, user_predictions)
@@ -64,11 +65,19 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
 
 send_message = True 
 redo_if_registered = False
+max_tries = 240 
 if __name__ == "__main__":
     print(sys.argv)
     if len(sys.argv) > 1:
-        if sys.argv[1] == 'test':
+        if sys.argv[1] == 'backfill':
             send_message = False
             redo_if_registered = True
-    while not fetch_and_post_last_contest(redo_if_registered=redo_if_registered, send_message=send_message):
+        if sys.argv[1] == 'backfill_send':
+            send_message = True
+            redo_if_registered = True
+    tries = 0
+    while tries < max_tries and not fetch_and_post_last_contest(redo_if_registered=redo_if_registered, send_message=send_message):
+        print(time.time())
+        sys.stdout.flush()
+        tries += 1
         time.sleep(30)
