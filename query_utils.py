@@ -101,6 +101,19 @@ class QueryUtils:
             ON (su.server_id = :server_id AND su.discord_user_id = du.discord_user_id)
         """, params)
 
+    def get_discord_user_in_server_with_leetcode_username(self, server_id, leetcode_username):
+        params = {
+            'server_id': server_id,
+            'leetcode_username': leetcode_username
+        }
+        res = self.conn.execute("""
+            SELECT
+                discord_user_id
+            FROM server_users
+            WHERE server_id = :server_id AND leetcode_username = :leetcode_username
+        """, params)
+        return [tup[0] for tup in res]
+
     def get_discord_username(self, user_id):
         params = {
             'user_id': user_id

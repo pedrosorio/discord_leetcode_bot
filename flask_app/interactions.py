@@ -36,21 +36,25 @@ def handle_register_user(request_json):
     leetcode_in_db = qu.get_leetcode_username(server_id, user_id)
     new_leetcode_username = request_json['data']['options'][0]['value']
     logging.info([server_id, username, new_leetcode_username])
-    qu.insert_or_update_server_user(
-        server_id=server_id,
-        discord_user_id=user_id,
-        leetcode_username=new_leetcode_username
-    )
-    qu.commit()
-    msg = "new user registered"
-    if user_in_db:
-        if leetcode_in_db:
-            if new_leetcode_username == leetcode_in_db[0]:
-                msg = "this is your leetcode username on this discord server already"
+    discord_user_id = qu.get_discord_user_in_server_with_leetcode_username(server_id, new_leetcode_username)
+    if discord_user_id and int(discord_user_id[0]) != int(user_id):
+        msg = 'Another discord user has registered that leetcode username already. If the other discord account belongs to you, you can use command /unregister_leetcode_user to remove that association before linking it with this account. If you do not have access to that account you can reach out to owner of this discord server to ask them to remove the association.'
+    else:
+        qu.insert_or_update_server_user(
+            server_id=server_id,
+            discord_user_id=user_id,
+            leetcode_username=new_leetcode_username
+        )
+        qu.commit()
+        msg = "new user registered"
+        if user_in_db:
+            if leetcode_in_db:
+                if new_leetcode_username == leetcode_in_db[0]:
+                    msg = "this is your leetcode username on this discord server already"
+                else:
+                    msg = "leetcode username updated for this discord server" 
             else:
-                msg = "leetcode username updated for this discord server" 
-        else:
-            msg = "user already in db for different discord, assigned leetcode username for this discord server"
+                msg = "user already in db for different discord server, assigned leetcode username for this discord server"
     logging.info(msg)
     return {
         "type": 4,
