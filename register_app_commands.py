@@ -45,6 +45,21 @@ UNREGISTER_LEETCODE_USER_COMMAND = {
     "options": []
 }
 
+ADMIN_UNREGISTER_LEETCODE_USER_COMMAND = {
+    "name": "admin_unregister_leetcode_user",
+    "type": 1,
+    "description": "(Admin only) Remove association between user on a given discord server with a leetcode user",
+    "default_member_permissions": "0",
+    "options": [
+        {
+            "name": "leetcode_username",
+            "description": "leetcode username of the user to remove",
+            "type": 3,
+            "required": True,
+        }
+    ]
+}
+
 
 
 if __name__ == '__main__':
@@ -54,6 +69,7 @@ if __name__ == '__main__':
     for cmd in (
         REGISTER_LEETCODE_USER_COMMAND,
         UNREGISTER_LEETCODE_USER_COMMAND,
+        ADMIN_UNREGISTER_LEETCODE_USER_COMMAND,
     ):
         register_command(cmd)
 

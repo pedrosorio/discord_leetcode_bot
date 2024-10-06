@@ -61,23 +61,55 @@ def handle_register_user(request_json):
         "data": {"content": msg, "flags": EPHEMERAL_MSG_FLAG}
     }
 
+def delete_discord_user_in_server(server_id: int, user_id: int, qu: QueryUtils) -> int:
+    # removes discord user association with leetcode name from server
+    # if user has no other discord servers, remove it from the discord DB altogether
+    # returns number of servers the user is still registered in
+    qu.delete_server_user(server_id, user_id)
+    ct_servers_left = qu.count_user_servers(user_id)
+    logging.info(f"deleted user now only in {ct_servers_left}")
+    if ct_servers_left == 0:
+        qu.delete_discord_user(user_id)
+    qu.commit()
+    return ct_servers_left
+
 def handle_unregister_user(request_json):
     qu = QueryUtils(get_db())
     user_id=request_json['member']['user']['id']
     server_id = request_json['guild_id']
     leetcode_in_db = qu.get_leetcode_username(server_id, user_id)
     if leetcode_in_db:
-        qu.delete_server_user(server_id, user_id)
-        ct_servers = qu.count_user_servers(user_id)
-        logging.info(f"deleted user now only in {ct_servers}")
-        if ct_servers == 0:
-            qu.delete_discord_user(user_id)
-        qu.commit()
+        ct_servers_left = delete_discord_user_in_server(server_id, user_id, qu)
         msg = f"Successfully unregistered your association with leetcode user '{leetcode_in_db[0]}' from this server."
-        if ct_servers > 0:
-            msg += f" Your discord user is still registered in {ct_servers} other discord servers."
+        if ct_servers_left > 0:
+            msg += f" Your discord user is still registered in {ct_servers_left} other discord servers."
     else:
         msg = "Your user is not registered with the bot in this server"
+
+    logging.info(msg)
+
+    return {
+        "type": 4,
+        "data": {"content": msg, "flags": EPHEMERAL_MSG_FLAG}
+    }
+
+def handle_admin_unregister_user(request_json):
+    qu = QueryUtils(get_db())
+    server_id = request_json['guild_id']
+    leetcode_username = request_json['data']['options'][0]['value']
+    discord_user_ids = qu.get_discord_user_in_server_with_leetcode_username(server_id, leetcode_username)
+    if not discord_user_ids:
+        msg = f"No user found with leetcode username '{leetcode_username}' in this server"
+    else:
+        if len(discord_user_ids) > 1:
+            discord_usernames = []
+            for discord_user_id in discord_user_ids:
+                discord_usernames.append(qu.get_discord_username(discord_user_id)[0])
+            msg = f"Found multiple users with leetcode username '{leetcode_username}' in this server: {', '.join(discord_usernames)}\nThis should not be possible. Skipping removal to avoid unregistering the wrong user."
+        else:
+            delete_discord_user_in_server(server_id, discord_user_ids[0], qu)
+            discord_username = qu.get_discord_username(discord_user_ids[0])[0]
+            msg = f"Successfully unregistered leetcode user '{leetcode_username}' ({discord_username}) from this server."
 
     logging.info(msg)
 
@@ -110,6 +142,8 @@ def interactions():
             return handle_register_user(request.json)
         if data["name"] == "unregister_leetcode_user":
             return handle_unregister_user(request.json)
+        if data["name"] == "admin_unregister_leetcode_user":
+            return handle_admin_unregister_user(request.json)
         return  {"type": 4, "data": {"content": "Unknown command"}}
 
         
