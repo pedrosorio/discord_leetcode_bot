@@ -107,8 +107,8 @@ def handle_admin_unregister_user(request_json):
                 discord_usernames.append(qu.get_discord_username(discord_user_id)[0])
             msg = f"Found multiple users with leetcode username '{leetcode_username}' in this server: {', '.join(discord_usernames)}\nThis should not be possible. Skipping removal to avoid unregistering the wrong user."
         else:
-            delete_discord_user_in_server(server_id, discord_user_ids[0], qu)
             discord_username = qu.get_discord_username(discord_user_ids[0])[0]
+            delete_discord_user_in_server(server_id, discord_user_ids[0], qu)
             msg = f"Successfully unregistered leetcode user '{leetcode_username}' ({discord_username}) from this server."
 
     logging.info(msg)
