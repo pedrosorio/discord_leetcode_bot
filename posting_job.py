@@ -26,14 +26,15 @@ def fetch_missing_users_for_contest(contest_name) -> None:
 
 DEFAULT_SUFFIX_MSG = "If you would like to join, type /register_leetcode_user in any channel on this discord server to add yourself to the list" 
 
-def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
+def fetch_and_post_last_contest(send_message=True, redo_if_registered=False, fetch_missing_users=True) -> bool:
     contest_name = pu.get_last_contest_names()[0]
     qu = QueryUtils()
     if qu.is_contest_registered(contest_name):
         print("contest already registered")
         if not redo_if_registered:
             return False
-    fetch_missing_users_for_contest(contest_name)
+    if fetch_missing_users:
+        fetch_missing_users_for_contest(contest_name)
     all_user_predictions = qu.get_contest_performances(contest_name)
     leetcode_user_to_prediction = {
         up.username: up
@@ -65,6 +66,7 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False):
 
 send_message = True 
 redo_if_registered = False
+fetch_missing_users = True
 max_tries = 240 
 if __name__ == "__main__":
     print(sys.argv)
@@ -75,8 +77,12 @@ if __name__ == "__main__":
         if sys.argv[1] == 'backfill_send':
             send_message = True
             redo_if_registered = True
+        if sys.argv[1] == 'dry_run_no_fetch':
+            send_message = False
+            redo_if_registered = True 
+            fetch_missing_users = False
     tries = 0
-    while tries < max_tries and not fetch_and_post_last_contest(redo_if_registered=redo_if_registered, send_message=send_message):
+    while tries < max_tries and not fetch_and_post_last_contest(redo_if_registered=redo_if_registered, send_message=send_message, fetch_missing_users=fetch_missing_users):
         print(time.time())
         sys.stdout.flush()
         tries += 1

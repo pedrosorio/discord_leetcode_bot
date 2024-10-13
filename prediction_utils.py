@@ -79,9 +79,10 @@ def get_flag(country_code):
 
 def format_message_for_users(contest: str, predictions: List[DiscordUserPrediction]) -> str:
     max_rank_len = max([len(str(up.rank)) for up in predictions])
-    max_username_len = max([len(up.username) for up in predictions])
+    max_username_len = max([len(up.username) for up in predictions] + [len('Average')])
     max_new_rating_len = max([len(f'{up.new_rating:+.2f}') for up in predictions])
     max_delta_rating_len = max([len(f'{up.delta_rating:+.2f}') for up in predictions])
+
     msg = [f'Predictions for {contest}']
     rows = []
     mentions = []
@@ -95,6 +96,16 @@ def format_message_for_users(contest: str, predictions: List[DiscordUserPredicti
             f'`={up.new_rating:{max_new_rating_len}.2f}`'
             ])
         rows.append(row)
+
+    average_delta = sum([up.delta_rating for up in predictions]) / len(predictions)
+    average_rating = sum([up.new_rating for up in predictions]) / len(predictions)
+    rows.append('   ' .join([
+        f'` {max_rank_len * " "}`',
+        f'`{"Average":<{max_username_len}}`',
+        get_flag('AQ'),
+        f'`{average_delta:+{max_delta_rating_len}.2f}`',
+        f'`={average_rating:{max_new_rating_len}.2f}`'
+    ]))
     msgs = []
     for i in range((len(rows)-1)//10 + 1):
         msg = [f'Predictions for {contest}'] if i == 0 else []
