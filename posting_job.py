@@ -13,8 +13,9 @@ def fetch_missing_users_for_contest(contest_name) -> None:
     print("set of leetcode users already fetched", inserted_user_set)
 
     user_predictions = []
-    for user in leetcode_user_set - inserted_user_set:
-        print(user)
+    set_to_fetch = leetcode_user_set - inserted_user_set
+    for i, user in enumerate(set_to_fetch):
+        print(user, f"{i+1}/{len(set_to_fetch)}")
         up = pu.fetch_user_prediction(contest_name, user)
         user_predictions.append(up)
         sys.stdout.flush()
@@ -27,6 +28,9 @@ def fetch_missing_users_for_contest(contest_name) -> None:
 DEFAULT_SUFFIX_MSG = "If you would like to join, type /register_leetcode_user in any channel on this discord server to add yourself to the list" 
 
 def fetch_and_post_last_contest(send_message=True, redo_if_registered=False, fetch_missing_users=True) -> bool:
+    print("send_message", send_message)
+    print("redo_if_registered", redo_if_registered)
+    print("fetch_missing_users", fetch_missing_users)
     contest_name = pu.get_last_contest_names()[0]
     qu = QueryUtils()
     if qu.is_contest_registered(contest_name):

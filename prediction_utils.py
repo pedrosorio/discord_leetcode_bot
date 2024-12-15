@@ -52,10 +52,13 @@ def fetch_user_prediction(contest_name, username) -> FullUserPrediction:
         if tries > 0:
             time.sleep(1)
         tries += 1
-        res = requests.get(url)
-        print(res.status_code)
-        if res.status_code == 200:
-            break
+        try:
+            res = requests.get(url, timeout=5)
+            print(res.status_code)
+            if res.status_code == 200:
+                break
+        except Exception as ex:
+            print("exception", ex)
     print(f"successful after {tries} requests")
     data = res.content
     print(data)
