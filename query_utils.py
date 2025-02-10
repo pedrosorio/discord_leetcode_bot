@@ -5,8 +5,6 @@ import time
 from typing import *
 import prediction_utils as pu
 
-logging.basicConfig(filename='leetcode_discord_bot_flask.log', level=logging.INFO, format="%(asctime)s:%(message)s")
-
 DEFAULT_DB_FILE = os.path.join(
     os.path.abspath(os.path.dirname(__file__)), 
     "instance", 
@@ -132,6 +130,32 @@ class QueryUtils:
     def get_leecode_user_set(self) -> Set[str]:
         res = self.conn.execute("SELECT DISTINCT leetcode_username FROM server_users")
         return set([tup[0] for tup in res])
+
+    def get_all_leetcode_usernames_for_discord_user(self, discord_user_id: int) -> set[str]:
+        params = {
+            'discord_user_id': discord_user_id
+        }
+        res = self.conn.execute("SELECT leetcode_username FROM server_users WHERE discord_user_id = :discord_user_id", params)
+        return set([tup[0] for tup in res])
+
+    def get_all_contest_performances_for_leetcode_username(self, leetcode_username: str) -> List[Dict]:
+        params = {
+            'leetcode_username': leetcode_username
+        }
+        res = self.conn.execute("""
+            SELECT 
+                contest_name,
+                rank,
+                new_rating,
+                delta_rating,
+                country_code
+            FROM
+                contest_performances
+            WHERE
+                leetcode_username = :leetcode_username AND
+                rank IS NOT NULL
+        """, params)
+        return [dict(row) for row in res.fetchall()]
     
     def register_contest(self, contest_name):
         timestamp = int(time.time())
@@ -171,6 +195,4 @@ class QueryUtils:
                 contest_name = :contest_name
         """ + ("AND rank IS NOT NULL" if skip_null_rank else ""), params)
         lst = [dict(row) for row in res.fetchall()]
-        print(lst)
         return [pu.FullUserPrediction(**dc) for dc in lst]
-

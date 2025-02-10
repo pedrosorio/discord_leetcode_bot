@@ -18,6 +18,7 @@ Predictions for weekly-contest-xxx
 Important files:
 - [register_app_commands.py](register_app_commands.py) registers with discord the list of commands the bot supports (and their UI)
 - [flask_app/interactions.py](flask_app/interactions.py) contains the code to handle the commands issued by users in a discord channel. Supports basic discord bot HTTP API functionality. Does not depend on a "discord bot" library.
+- [gateway_discord_wss_app.py](gateway_discord_wss_app.py) uses the discord.py library to create a WSS client to the discord API gateway that listens to DMs from users and responds with a list of rating changes in all the contests they have participated while registered with the bot.
 - [posting_job.py](posting_job.py) is a script that polls https://lccn.lbao.site ([Github project](https://github.com/baoliay2008/lccn_predictor/tree/main)) every 30s until a new contest is published. Once a new contest is available, it fetches the rank and rating prediction for every user who registered with the bot and stores them in the DB. It uses this information to iterate over the discord servers where the bot is installed and sends a message to the corresponding channel summarizing the results of the users in that server.
 
 
