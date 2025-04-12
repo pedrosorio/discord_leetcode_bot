@@ -31,7 +31,10 @@ def fetch_and_post_last_contest(send_message=True, redo_if_registered=False, fet
     print("send_message", send_message)
     print("redo_if_registered", redo_if_registered)
     print("fetch_missing_users", fetch_missing_users)
-    contest_name = pu.get_last_contest_names()[0]
+    try:
+        contest_name = pu.get_last_contest_names()[0]
+    except Exception as ex:
+        print("failed to get latest contest", str(ex))
     qu = QueryUtils()
     if qu.is_contest_registered(contest_name):
         print("contest already registered")
