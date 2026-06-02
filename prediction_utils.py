@@ -64,15 +64,19 @@ class DiscordUserPrediction(FullUserPrediction):
 
 def fetch_country_code(username: str) -> str | None:
     query = '{ matchedUser(username: "%s") { profile { countryCode } } }' % username
-    try:
-        res = requests.post(LEETCODE_GRAPHQL, json={"query": query}, timeout=5)
-        matched = res.json()["data"]["matchedUser"]
-        if matched:
-            code = matched["profile"]["countryCode"]
-            log.info("country_code for %s: %s", username, code)
-            return code
-    except Exception as ex:
-        log.info("fetch_country_code failed for %s: %s", username, ex)
+    for attempt in range(3):
+        try:
+            res = requests.post(LEETCODE_GRAPHQL, json={"query": query}, timeout=5)
+            matched = res.json()["data"]["matchedUser"]
+            if matched:
+                code = matched["profile"]["countryCode"]
+                log.info("country_code for %s: %s", username, code)
+                return code
+            break
+        except Exception as ex:
+            log.info("fetch_country_code attempt %d failed for %s: %s", attempt + 1, username, ex)
+            if attempt < 2:
+                time.sleep(2)
     log.info("country_code for %s: None", username)
     return None
 
