@@ -5,11 +5,13 @@ import time
 from typing import *
 import prediction_utils as pu
 
+log = logging.getLogger(__name__)
+
 DEFAULT_DB_FILE = os.path.join(
-    os.path.abspath(os.path.dirname(__file__)), 
-    "instance", 
+    os.path.abspath(os.path.dirname(__file__)),
+    "instance",
     "discord_leetcode_bot.sqlite")
-print(DEFAULT_DB_FILE)
+log.info("%s", DEFAULT_DB_FILE)
 
 class QueryUtils:
     def __init__(self, conn=None):
